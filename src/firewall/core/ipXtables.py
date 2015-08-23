@@ -98,44 +98,50 @@ for chain in BUILT_IN_CHAINS["nat"]:
         OUR_CHAINS["nat"].update(set(["%s_ZONES_SOURCE" % chain, "%s_ZONES" % chain]))
 
 DEFAULT_RULES["filter"] = [
+    "-N INPUT_prefilter",
     "-N INPUT_direct",
     "-N INPUT_ZONES_SOURCE",
     "-N INPUT_ZONES",
 
-    "-I INPUT 1 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
-    "-I INPUT 2 -i lo -j ACCEPT",
-    "-I INPUT 3 -j INPUT_direct",
-    "-I INPUT 4 -j INPUT_ZONES_SOURCE",
-    "-I INPUT 5 -j INPUT_ZONES",
-    "-I INPUT 6 -p %%ICMP%% -j ACCEPT",
-    "-I INPUT 7 -m conntrack --ctstate INVALID -j DROP",
-    "-I INPUT 8 -j %%REJECT%%",
+    "-I INPUT 1 -j INPUT_prefilter",
+    "-I INPUT 2 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+    "-I INPUT 3 -i lo -j ACCEPT",
+    "-I INPUT 4 -j INPUT_direct",
+    "-I INPUT 5 -j INPUT_ZONES_SOURCE",
+    "-I INPUT 6 -j INPUT_ZONES",
+    "-I INPUT 7 -p %%ICMP%% -j ACCEPT",
+    "-I INPUT 8 -m conntrack --ctstate INVALID -j DROP",
+    "-I INPUT 9 -j %%REJECT%%",
 
+    "-N FORWARD_prefilter",
     "-N FORWARD_direct",
     "-N FORWARD_IN_ZONES_SOURCE",
     "-N FORWARD_IN_ZONES",
     "-N FORWARD_OUT_ZONES_SOURCE",
     "-N FORWARD_OUT_ZONES",
 
-    "-I FORWARD 1 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
-    "-I FORWARD 2 -i lo -j ACCEPT",
-    "-I FORWARD 3 -j FORWARD_direct",
-    "-I FORWARD 4 -j FORWARD_IN_ZONES_SOURCE",
-    "-I FORWARD 5 -j FORWARD_IN_ZONES",
-    "-I FORWARD 6 -j FORWARD_OUT_ZONES_SOURCE",
-    "-I FORWARD 7 -j FORWARD_OUT_ZONES",
-    "-I FORWARD 8 -p %%ICMP%% -j ACCEPT",
-    "-I FORWARD 9 -m conntrack --ctstate INVALID -j DROP",
-    "-I FORWARD 10 -j %%REJECT%%",
+    "-I FORWARD 1 -j FORWARD_prefilter",
+    "-I FORWARD 2 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+    "-I FORWARD 3 -i lo -j ACCEPT",
+    "-I FORWARD 4 -j FORWARD_direct",
+    "-I FORWARD 5 -j FORWARD_IN_ZONES_SOURCE",
+    "-I FORWARD 6 -j FORWARD_IN_ZONES",
+    "-I FORWARD 7 -j FORWARD_OUT_ZONES_SOURCE",
+    "-I FORWARD 8 -j FORWARD_OUT_ZONES",
+    "-I FORWARD 9 -p %%ICMP%% -j ACCEPT",
+    "-I FORWARD 10 -m conntrack --ctstate INVALID -j DROP",
+    "-I FORWARD 11 -j %%REJECT%%",
 
+    "-N OUTPUT_prefilter",
     "-N OUTPUT_direct",
 
-    "-I OUTPUT 1 -j OUTPUT_direct",
+    "-I OUTPUT 1 -j OUTPUT_prefilter",
+    "-I OUTPUT 2 -j OUTPUT_direct",
 ]
-OUR_CHAINS["filter"] = set(["INPUT_direct", "INPUT_ZONES_SOURCE", "INPUT_ZONES",
-                          "FORWARD_direct", "FORWARD_IN_ZONES_SOURCE",
+OUR_CHAINS["filter"] = set(["INPUT_prefilter", "INPUT_direct", "INPUT_ZONES_SOURCE", "INPUT_ZONES",
+                          "FORWARD_prefilter", "FORWARD_direct", "FORWARD_IN_ZONES_SOURCE",
                           "FORWARD_IN_ZONES", "FORWARD_OUT_ZONES_SOURCE",
-                          "FORWARD_OUT_ZONES", "OUTPUT_direct"])
+                          "FORWARD_OUT_ZONES", "OUTPUT_prefilter", "OUTPUT_direct"])
 
 
 class ip4tables(object):
